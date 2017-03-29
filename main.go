@@ -23,24 +23,43 @@ func main() {
 			log.Println(err)
 			return
 		}
+		// defer conn.Close()
 
-		defer conn.Close()
+		go func(connection *websocket.Conn) {
 
-		for {
-			mt, message, err := conn.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-				break
+			for {
+				_, message, err := connection.ReadMessage()
+
+				if err != nil {
+					log.Panicln("ReadMessage broken: ", err)
+				}
+
+				log.Printf("Message that recieve: %s", message)
+
+				// _ = conn.WriteMessage(messageType, message)
+
+				defer connection.Close()
 			}
-			log.Printf("recv: %s", message)
 
-			err = conn.WriteMessage(mt, message)
-			if err != nil {
-				log.Println("write:", err)
-				break
-			}
+		}(conn)
 
-		}
+		// for {
+		// 	mt, message, err := conn.ReadMessage()
+		// 	if err != nil {
+		// 		log.Println("read:", err)
+		// 		break
+		// 	}
+		// 	log.Printf("recv: %s", message)
+		//
+		// 	// test := []byte("test")
+		//
+		// 	err = conn.WriteMessage(mt, message)
+		// 	if err != nil {
+		// 		log.Println("write:", err)
+		// 		break
+		// 	}
+		//
+		// }
 
 	})
 

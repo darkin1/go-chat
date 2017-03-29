@@ -8,17 +8,18 @@
 
     <h1>WebSocket Echo Test</h1>
      <form>
+          <div id="chat-box"></div>
          <p>
-             Message: <input id="message" type="text" value="Hello, world!">
+             Message: <input id="message" type="text" value="">
          </p>
      </form>
      <button onclick="send();">Send Message</button>
 
     <script>
-      var ws = new WebSocket("ws://localhost:8080/v1/ws");
+      var ws = new WebSocket("ws://localhost:3000/v1/ws");
 
       ws.onopen = function() {
-         console.log("connected to " + wsuri);
+         console.log("connected!");
       }
 
       ws.onclose = function(e) {
@@ -26,12 +27,15 @@
       }
 
       ws.onmessage = function(e) {
-         console.log("message received: " + e.data);
+        var msg = document.getElementById('chat-box').innerHTML += '<p>'+e.data+'</p>'
+
+        //  console.log("message received: " + e.data);
       }
 
       function send() {
            var msg = document.getElementById('message').value;
            ws.send(msg);
+           var msg = document.getElementById('message').value = "";
        };
 
     </script>
