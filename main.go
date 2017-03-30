@@ -25,10 +25,13 @@ func main() {
 		}
 		// defer conn.Close()
 
-		go func(connection *websocket.Conn) {
+		chMessageType := make(chan int)
+		chMessage := make(chan []byte)
+
+		go func(connection *websocket.Conn, chMessageType chan int, chMessage chan []byte) {
 
 			for {
-				_, message, err := connection.ReadMessage()
+				messageType, message, err := connection.ReadMessage()
 
 				if err != nil {
 					log.Panicln("ReadMessage broken: ", err)
@@ -38,10 +41,29 @@ func main() {
 
 				// _ = conn.WriteMessage(messageType, message)
 
+				chMessageType <- messageType
+				chMessage <- message
+
 				defer connection.Close()
 			}
 
-		}(conn)
+		}(conn, chMessageType, chMessage)
+
+		go func(connection *websocket.Conn, chMessageType chan int, chMessage chan []byte) {
+
+			for {
+				messageType := <-chMessageType
+				message := <-chMessage
+
+				messagex := append([]byte("sent: "), message...)
+
+				err := conn.WriteMessage(messageType, messagex)
+
+				if err != nil {
+					log.Panicln("WriteMessage broken: ", err)
+				}
+			}
+		}(conn, chMessageType, chMessage)
 
 		// for {
 		// 	mt, message, err := conn.ReadMessage()
